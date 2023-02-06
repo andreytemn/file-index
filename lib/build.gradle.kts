@@ -41,4 +41,5 @@ dependencies {
 
     implementation("com.github.vishna:watchservice-ktx:master-SNAPSHOT")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
 }

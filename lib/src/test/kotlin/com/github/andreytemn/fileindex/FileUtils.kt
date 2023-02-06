@@ -5,6 +5,7 @@ import java.io.File
 const val FILE1 = "file1.txt"
 const val FILE2 = "file2.txt"
 const val FILE3 = "file3.txt"
+const val FILE4 = "nested\\file4.txt"
 
 /**
  * Get a list of files from test resources with given [names]
