@@ -8,12 +8,19 @@ import java.util.concurrent.ConcurrentHashMap
  * Updating and writing the index should be synchronized externally to maintain its consistency.
  * The tokenizer is required to split the file content into words.
  */
-class ConcurrentUpdateFileIndex(
-    private val tokenizer: Tokenizer,
-    private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
+internal class ConcurrentUpdateFileIndex(
+    private val tokenizer: Tokenizer
 ) : FileIndex {
+
+    private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
     override fun add(file: File) {
-        tokenizer.split(file.readText()).forEach { storage.getOrPut(it) { hashSetOf() }.add(file) }
+        file.bufferedReader().useLines {
+            it.flatMap(tokenizer::split).forEach { str -> put(str, file) }
+        }
+    }
+
+    private fun put(str: String, file: File) {
+        storage.getOrPut(str) { hashSetOf() }.add(file)
     }
 
     override fun clear() {

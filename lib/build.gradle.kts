@@ -40,4 +40,5 @@ dependencies {
     api("org.apache.commons:commons-math3:3.6.1")
 
     implementation("com.github.vishna:watchservice-ktx:master-SNAPSHOT")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
 }
