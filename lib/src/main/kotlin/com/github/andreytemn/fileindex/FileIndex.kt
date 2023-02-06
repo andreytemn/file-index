@@ -1,47 +1,23 @@
 package com.github.andreytemn.fileindex
 
-import dev.vishna.watchservice.KWatchEvent
-import dev.vishna.watchservice.asWatchChannel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import java.io.File
-import java.util.concurrent.ConcurrentHashMap
 
-class FileIndex(
-    scope: CoroutineScope,
-    path: File,
-    private val index: MutableMap<String, List<File>> = ConcurrentHashMap()
-) : AutoCloseable {
+/**
+ * Stores the reversed file index with mapping from words to the files that contain them.
+ */
+interface FileIndex {
+    /**
+     * Add the [file] to the index
+     */
+    fun add(file: File)
 
-    init {
-        watch(scope, path)
-    }
+    /**
+     * Remove all the stored files
+     */
+    fun clear()
 
-    private lateinit var watchChannel: Channel<KWatchEvent>
-    private fun watch(scope: CoroutineScope, path: File) {
-        watchChannel = path.asWatchChannel()
-
-        scope.launch {
-            for (event in watchChannel) {
-                when (event.kind) {
-                    KWatchEvent.Kind.Created, KWatchEvent.Kind.Deleted, KWatchEvent.Kind.Modified -> updateCache(path)
-                    KWatchEvent.Kind.Initialized -> collectIndex(path)
-                }
-            }
-        }
-    }
-
-    private fun collectIndex(path: File) {
-
-    }
-
-    private fun updateCache(path: File) {
-        index.clear()
-        collectIndex(path)
-    }
-
-    override fun close() {
-        watchChannel.close()
-    }
+    /**
+     * Return a [Sequence] of files that contain the given [word] or empty if none found
+     */
+    operator fun get(word: String): Sequence<File>
 }
