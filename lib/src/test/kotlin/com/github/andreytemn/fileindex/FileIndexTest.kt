@@ -1,13 +1,8 @@
 package com.github.andreytemn.fileindex
 
 import org.junit.Test
-import java.io.File
 import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
-
-private const val FILE1 = "file1.txt"
-private const val FILE2 = "file2.txt"
-private const val FILE3 = "file3.txt"
 
 /**
  * Test for [ConcurrentUpdateFileIndex]
@@ -43,10 +38,4 @@ class FileIndexTest {
 
         assertContentEquals(sequenceOf(), index["non-existing"])
     }
-
-    private fun getFiles(vararg names: String): List<File> = names.map {
-        getFile(it)
-    }
-
-    private fun getFile(name: String) = File(FileIndexTest::class.java.getResource(name)!!.toURI())
 }
