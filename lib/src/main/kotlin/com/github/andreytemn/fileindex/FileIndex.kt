@@ -29,7 +29,14 @@ class FileIndex(
         service = FileIndexService(scope, path, ConcurrentUpdateFileIndexStorage(tokenizer))
     }
 
+    /**
+     * Get a sequence of files that contain the [word]. May block if the index is being updated.
+     */
     operator fun get(word: String) = service[word]
+
+    /**
+     * Close the index and stop watching the path.
+     */
     override fun close() {
         service.close()
     }
