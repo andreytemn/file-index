@@ -23,7 +23,7 @@ interface Tokenizer {
 /**
  * Default tokenizer that splits a line into words by whitespaces.
  */
-class SpaceTokenizer : Tokenizer {
+internal class SpaceTokenizer : Tokenizer {
     override fun split(text: String): Sequence<String> =
         text.split("\\s+".toRegex()).asSequence().filter { it.isNotEmpty() }
 }

@@ -18,7 +18,7 @@ class FileIndexServiceTest {
 
     @Test(expected = CancellationException::class)
     fun `initialization reads all files`() = runBlocking {
-        val service = FileIndexService(this, getResourceDir(), ConcurrentUpdateFileIndex(SpaceTokenizer()))
+        val service = FileIndexService(this, getResourceDir(), ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
         delay(1000)
 
         assertContentEquals(getFiles(FILE4, FILE1, FILE2, FILE3).asSequence(), service["sit"])
@@ -29,7 +29,7 @@ class FileIndexServiceTest {
 
     @Test(expected = CancellationException::class)
     fun `adding single files does not invalidate cache`() = runBlocking {
-        val index = mock<FileIndex>()
+        val index = mock<FileIndexStorage>()
         val dir = createTempDir()
         val service = FileIndexService(this, dir, index)
 
@@ -45,7 +45,7 @@ class FileIndexServiceTest {
 
     @Test(expected = CancellationException::class)
     fun `file deleting triggers cache invalidation`() = runBlocking {
-        val index = mock<FileIndex>()
+        val index = mock<FileIndexStorage>()
         val dir = createTempDir()
         val service = FileIndexService(this, dir, index)
 
@@ -65,7 +65,7 @@ class FileIndexServiceTest {
     @Test(expected = CancellationException::class)
     fun `file modification rebuilds cache`() = runBlocking {
         val dir = createTempDir()
-        val service = FileIndexService(this, dir, ConcurrentUpdateFileIndex(SpaceTokenizer()))
+        val service = FileIndexService(this, dir, ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
 
         val file = createFile(dir, "name")
         file.writeText("text1\ntext2")

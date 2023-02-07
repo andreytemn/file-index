@@ -4,13 +4,13 @@ import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * A [FileIndex] implementation that allows concurrent adding new files.
+ * A [FileIndexStorage] implementation that allows concurrent adding new files.
  * Updating and writing the index should be synchronized externally to maintain its consistency.
  * The tokenizer is required to split the file content into words.
  */
-internal class ConcurrentUpdateFileIndex(
+internal class ConcurrentUpdateFileIndexStorage(
     private val tokenizer: Tokenizer
-) : FileIndex {
+) : FileIndexStorage {
 
     private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
     override fun add(file: File) {

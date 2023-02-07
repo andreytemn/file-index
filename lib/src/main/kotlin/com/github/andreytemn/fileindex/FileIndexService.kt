@@ -12,12 +12,12 @@ import kotlin.concurrent.write
 
 /**
  * Serves the file index requests. Read and write operations are synchronized with different locks to maintain the invariant for the index.
- * The service watches the file system events of the given path. THe watcher works in the provided scope.
+ * The service watches the file system events of the given path. The watcher works in the provided scope.
  */
 internal class FileIndexService(
     scope: CoroutineScope,
     path: File,
-    private val fileIndex: FileIndex,
+    private val fileIndexStorage: FileIndexStorage,
     private val fileLoadingDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : AutoCloseable {
 
@@ -32,7 +32,7 @@ internal class FileIndexService(
     /**
      * Get a sequence of files that contain the [word]. May block if the index is being updated.
      */
-    operator fun get(word: String): Sequence<File> = lock.read { fileIndex[word] }
+    operator fun get(word: String): Sequence<File> = lock.read { fileIndexStorage[word] }
 
     /**
      * Stop watching the path.
@@ -54,12 +54,12 @@ internal class FileIndexService(
     }
 
     private fun addSingleFile(file: File) {
-        if (file.isFile) lock.write { fileIndex.add(file) }
+        if (file.isFile) lock.write { fileIndexStorage.add(file) }
     }
 
     private suspend fun updateIndex(path: File) {
         lock.write {
-            fileIndex.clear()
+            fileIndexStorage.clear()
             collectIndex(path)
         }
     }
@@ -72,7 +72,7 @@ internal class FileIndexService(
         if (path.isDirectory) path.listFiles()?.forEach { collectIndex(it) }
         else withContext(fileLoadingDispatcher) {
             launch {
-                fileIndex.add(path)
+                fileIndexStorage.add(path)
             }
         }
     }

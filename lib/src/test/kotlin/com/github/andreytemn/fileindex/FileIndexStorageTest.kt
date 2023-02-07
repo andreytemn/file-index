@@ -5,12 +5,12 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
 
 /**
- * Test for [ConcurrentUpdateFileIndex]
+ * Test for [ConcurrentUpdateFileIndexStorage]
  */
-class FileIndexTest {
+class FileIndexStorageTest {
     @Test
     fun `querying word that presents in multiple files returns all of them`() {
-        val index = ConcurrentUpdateFileIndex(SpaceTokenizer())
+        val index = ConcurrentUpdateFileIndexStorage(SpaceTokenizer())
         val files = getFiles(FILE1, FILE2, FILE3)
 
         files.forEach(index::add)
@@ -20,7 +20,7 @@ class FileIndexTest {
 
     @Test
     fun `cleared index is empty`() {
-        val index = ConcurrentUpdateFileIndex(SpaceTokenizer())
+        val index = ConcurrentUpdateFileIndexStorage(SpaceTokenizer())
 
         getFiles(FILE1).forEach(index::add)
 
@@ -33,7 +33,7 @@ class FileIndexTest {
 
     @Test
     fun `querying non-existing word returns empty sequence`() {
-        val index = ConcurrentUpdateFileIndex(SpaceTokenizer())
+        val index = ConcurrentUpdateFileIndexStorage(SpaceTokenizer())
         getFiles(FILE1, FILE2, FILE3).forEach(index::add)
 
         assertContentEquals(sequenceOf(), index["non-existing"])
@@ -41,7 +41,7 @@ class FileIndexTest {
 
     @Test
     fun `custom tokenizer filtrates and maps tokens`() {
-        val index = ConcurrentUpdateFileIndex(object : Tokenizer {
+        val index = ConcurrentUpdateFileIndexStorage(object : Tokenizer {
             override fun split(text: String) = text.split("").asSequence()
             override fun map(word: String) = word.uppercase()
             override fun filter(word: String) = word == "b"
@@ -54,7 +54,7 @@ class FileIndexTest {
 
     @Test
     fun `file that contains a word several times presents only once`() {
-        val index = ConcurrentUpdateFileIndex(SpaceTokenizer())
+        val index = ConcurrentUpdateFileIndexStorage(SpaceTokenizer())
         val file = getFile(FILE4)
 
         index.add(file)
