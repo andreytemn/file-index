@@ -2,6 +2,7 @@ package com.github.andreytemn.fileindex
 
 import kotlinx.coroutines.CoroutineScope
 import java.io.File
+import java.nio.charset.Charset
 
 /**
  * A reversed file index that stores a mapping from string words to the files that contain them.
@@ -15,19 +16,23 @@ import java.io.File
  * @param scope the scope to launch file watcher and load files
  * @param path the directory to build the index
  * @param tokenizer the tokenizer to split the file content
+ * @param charset the charset of the files. Defaults to UTF-8
+ *
+ * @throws IllegalArgumentException if the path does not exist
  *
  * @author Andrei Temnikov
  */
 class FileIndex(
     scope: CoroutineScope,
     path: File,
-    tokenizer: Tokenizer = SpaceTokenizer()
+    tokenizer: Tokenizer = SpaceTokenizer(),
+    charset: Charset = Charsets.UTF_8
 ) : AutoCloseable {
     private val service: FileIndexService
 
     init {
         if (!path.exists()) throw IllegalArgumentException("Path $path does not exist")
-        service = FileIndexService(scope, path, ConcurrentUpdateFileIndexStorage(tokenizer))
+        service = FileIndexService(scope, path, ConcurrentUpdateFileIndexStorage(tokenizer, charset))
     }
 
     /**

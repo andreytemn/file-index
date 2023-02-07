@@ -1,6 +1,7 @@
 package com.github.andreytemn.fileindex
 
 import java.io.File
+import java.nio.charset.Charset
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -9,12 +10,13 @@ import java.util.concurrent.ConcurrentHashMap
  * The tokenizer is required to split the file content into words.
  */
 internal class ConcurrentUpdateFileIndexStorage(
-    private val tokenizer: Tokenizer
+    private val tokenizer: Tokenizer,
+    private val charset: Charset = Charsets.UTF_8
 ) : FileIndexStorage {
 
     private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
     override fun add(file: File) {
-        file.bufferedReader().useLines { seq ->
+        file.bufferedReader(charset).useLines { seq ->
             seq.flatMap(tokenizer::split).filter { tokenizer.filter(it) }.map { tokenizer.map(it) }
                 .forEach { put(it, file) }
         }
