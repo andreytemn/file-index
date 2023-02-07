@@ -26,6 +26,7 @@ class FileIndex(
     private val service: FileIndexService
 
     init {
+        if (!path.exists()) throw IllegalArgumentException("Path $path does not exist")
         service = FileIndexService(scope, path, ConcurrentUpdateFileIndexStorage(tokenizer))
     }
 
