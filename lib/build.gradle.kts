@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 group = "com.github.andreytemn"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
