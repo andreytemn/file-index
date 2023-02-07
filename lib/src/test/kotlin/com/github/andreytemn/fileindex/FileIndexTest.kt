@@ -51,4 +51,14 @@ class FileIndexTest {
         assertContentEquals(sequenceOf(getFile(FILE2)), index["B"])
         assertContentEquals(sequenceOf(), index["b"])
     }
+
+    @Test
+    fun `file that contains a word several times presents only once`() {
+        val index = ConcurrentUpdateFileIndex(SpaceTokenizer())
+        val file = getFile(FILE4)
+
+        index.add(file)
+
+        assertContentEquals(sequenceOf(file), index["sit"])
+    }
 }
