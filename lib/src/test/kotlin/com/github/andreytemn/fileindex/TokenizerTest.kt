@@ -14,7 +14,7 @@ class TokenizerTest {
         val tokenizer = SpaceTokenizer()
         assertContentEquals(
             sequenceOf("Lorem", "Ipsum", "Dolor", "Sit", "Amet"),
-            tokenizer.split(TEXT).filter { tokenizer.filter(it) })
+            tokenizer.split(TEXT).filter { tokenizer.filter(it) }.map { tokenizer.map(it) })
     }
 
     @Test

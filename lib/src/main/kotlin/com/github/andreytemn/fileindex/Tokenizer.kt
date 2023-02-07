@@ -13,6 +13,11 @@ interface Tokenizer {
      * Filter the [word] from the index. Return true if the word should present in the index.
      */
     fun filter(word: String): Boolean = true
+
+    /**
+     * Map the [word] before putting it to the index.
+     */
+    fun map(word: String): String = word
 }
 
 /**

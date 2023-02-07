@@ -38,4 +38,17 @@ class FileIndexTest {
 
         assertContentEquals(sequenceOf(), index["non-existing"])
     }
+
+    @Test
+    fun `custom tokenizer filtrates and maps tokens`() {
+        val index = ConcurrentUpdateFileIndex(object : Tokenizer {
+            override fun split(text: String) = text.split("").asSequence()
+            override fun map(word: String) = word.uppercase()
+            override fun filter(word: String) = word == "b"
+        })
+        getFiles(FILE1, FILE2, FILE3).forEach(index::add)
+
+        assertContentEquals(sequenceOf(getFile(FILE2)), index["B"])
+        assertContentEquals(sequenceOf(), index["b"])
+    }
 }
