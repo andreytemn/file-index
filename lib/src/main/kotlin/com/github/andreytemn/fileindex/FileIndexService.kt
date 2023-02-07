@@ -3,9 +3,8 @@ package com.github.andreytemn.fileindex
 import dev.vishna.watchservice.KWatchEvent
 import dev.vishna.watchservice.KWatchEvent.Kind.*
 import dev.vishna.watchservice.asWatchChannel
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import java.io.File
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
@@ -18,7 +17,8 @@ import kotlin.concurrent.write
 internal class FileIndexService(
     scope: CoroutineScope,
     path: File,
-    private val fileIndex: FileIndex
+    private val fileIndex: FileIndex,
+    private val fileLoadingDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : AutoCloseable {
 
     private val lock: ReentrantReadWriteLock = ReentrantReadWriteLock()
@@ -32,8 +32,7 @@ internal class FileIndexService(
     /**
      * Get a sequence of files that contain the [word]. May block if the index is being updated.
      */
-    operator fun get(word: String): Sequence<File> =
-        lock.read { fileIndex[word] }
+    operator fun get(word: String): Sequence<File> = lock.read { fileIndex[word] }
 
     /**
      * Stop watching the path.
@@ -58,21 +57,23 @@ internal class FileIndexService(
         if (file.isFile) lock.write { fileIndex.add(file) }
     }
 
-    private fun updateIndex(path: File) {
+    private suspend fun updateIndex(path: File) {
         lock.write {
             fileIndex.clear()
             collectIndex(path)
         }
     }
 
-    private fun initIndex(path: File) {
+    private suspend fun initIndex(path: File) {
         lock.write { collectIndex(path) }
     }
 
-    private fun collectIndex(path: File) {
-        if (path.isDirectory)
-            path.listFiles()?.forEach { collectIndex(it) }
-        else
-            fileIndex.add(path)
+    private suspend fun collectIndex(path: File) {
+        if (path.isDirectory) path.listFiles()?.forEach { collectIndex(it) }
+        else withContext(fileLoadingDispatcher) {
+            launch {
+                fileIndex.add(path)
+            }
+        }
     }
 }
