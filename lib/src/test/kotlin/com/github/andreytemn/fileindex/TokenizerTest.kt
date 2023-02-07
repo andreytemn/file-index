@@ -11,7 +11,10 @@ private const val TEXT = "Lorem Ipsum   Dolor\tSit\r\nAmet\n"
 class TokenizerTest {
     @Test
     fun `default tokenizer splits text by whitespaces`() {
-        assertContentEquals(sequenceOf("Lorem", "Ipsum", "Dolor", "Sit", "Amet"), SpaceTokenizer().split(TEXT))
+        val tokenizer = SpaceTokenizer()
+        assertContentEquals(
+            sequenceOf("Lorem", "Ipsum", "Dolor", "Sit", "Amet"),
+            tokenizer.split(TEXT).filter { tokenizer.filter(it) })
     }
 
     @Test

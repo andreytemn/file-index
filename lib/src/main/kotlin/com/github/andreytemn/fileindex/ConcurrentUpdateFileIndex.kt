@@ -15,7 +15,7 @@ internal class ConcurrentUpdateFileIndex(
     private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
     override fun add(file: File) {
         file.bufferedReader().useLines {
-            it.flatMap(tokenizer::split).forEach { str -> put(str, file) }
+            it.flatMap(tokenizer::split).filter { word -> tokenizer.filter(word) }.forEach { str -> put(str, file) }
         }
     }
 

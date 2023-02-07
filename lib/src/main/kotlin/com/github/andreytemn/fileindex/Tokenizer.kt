@@ -10,11 +10,15 @@ interface Tokenizer {
     fun split(text: String): Sequence<String>
 
     /**
-     * Remove not required tokens from the given sequence of [tokens]. By default, filtration is not applied.
+     * Filter the [word] from the index. Return true if the word should present in the index.
      */
-    fun filter(tokens: Sequence<String>): Sequence<String> = tokens
+    fun filter(word: String): Boolean = true
 }
 
+/**
+ * Default tokenizer that splits a line into words by whitespaces.
+ */
 class SpaceTokenizer : Tokenizer {
-    override fun split(text: String): Sequence<String> = text.split("\\s+".toRegex()).asSequence().filter { it.isNotEmpty() }
+    override fun split(text: String): Sequence<String> =
+        text.split("\\s+".toRegex()).asSequence().filter { it.isNotEmpty() }
 }
