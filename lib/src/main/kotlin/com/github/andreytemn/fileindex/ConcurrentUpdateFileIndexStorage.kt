@@ -16,10 +16,11 @@ internal class ConcurrentUpdateFileIndexStorage(
 
     private val storage: MutableMap<String, MutableSet<File>> = ConcurrentHashMap()
     override fun add(file: File) {
-        file.bufferedReader(charset).useLines { seq ->
-            seq.flatMap(tokenizer::split).filter { tokenizer.filter(it) }.map { tokenizer.map(it) }
-                .forEach { put(it, file) }
-        }
+        if (file.exists() && file.canRead())
+            file.bufferedReader(charset).useLines { seq ->
+                seq.flatMap(tokenizer::split).filter { tokenizer.filter(it) }.map { tokenizer.map(it) }
+                    .forEach { put(it, file) }
+            }
     }
 
     override fun clear() {

@@ -1,6 +1,7 @@
 package com.github.andreytemn.fileindex
 
 import org.junit.Test
+import java.io.File
 import kotlin.test.assertContentEquals
 import kotlin.test.assertTrue
 
@@ -60,5 +61,13 @@ class FileIndexStorageTest {
         index.add(file)
 
         assertContentEquals(sequenceOf(file), index["sit"])
+    }
+
+    @Test
+    fun `no exceptions thrown on non-existing file`(){
+        val index = ConcurrentUpdateFileIndexStorage(SpaceTokenizer())
+        val file = File("non-existing")
+
+        index.add(file)
     }
 }
