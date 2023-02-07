@@ -1,5 +1,7 @@
 package com.github.andreytemn.fileindex
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.io.path.createTempDirectory
 
@@ -44,3 +46,10 @@ fun createFile(dir: File, name: String): File {
  * Create a temp folder that will auto-delete on exit.
  */
 fun createTempDir(): File = createTempDirectory("file-index").toFile().also { it.deleteOnExit() }
+
+/**
+ * Wait for a second to allow the file watcher to process the events
+ */
+suspend fun delay() {
+    withContext(Dispatchers.Default) { kotlinx.coroutines.delay(100) }
+}
