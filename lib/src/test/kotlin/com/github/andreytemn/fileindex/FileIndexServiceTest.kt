@@ -1,7 +1,7 @@
 package com.github.andreytemn.fileindex
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.*
 import org.junit.Test
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.mock
@@ -18,7 +18,11 @@ class FileIndexServiceTest {
 
     @Test
     fun `initialization reads all files`() = runTest {
-        val service = FileIndexService(this, getResourceDir(), ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
+        val path = getResourceDir()
+        val tokenizer = SpaceTokenizer()
+        val fileIndexStorage = ConcurrentUpdateFileIndexStorage(tokenizer)
+
+        val service = FileIndexService(this, path, fileIndexStorage)
         delay()
 
         assertContentEquals(getFiles(FILE4, FILE1, FILE2, FILE3).asSequence(), service["sit"])
