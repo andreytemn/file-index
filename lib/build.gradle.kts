@@ -7,12 +7,10 @@ version = "1.0.0"
 
 repositories {
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("com.github.vishna:watchservice-ktx:master-SNAPSHOT")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")

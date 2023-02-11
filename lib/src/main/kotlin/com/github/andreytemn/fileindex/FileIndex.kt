@@ -1,6 +1,7 @@
 package com.github.andreytemn.fileindex
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.charset.Charset
 
@@ -32,7 +33,8 @@ class FileIndex(
 
     init {
         if (!path.exists()) throw IllegalArgumentException("Path $path does not exist")
-        service = FileIndexService(scope, path, ConcurrentUpdateFileIndexStorage(tokenizer, charset))
+        service = FileIndexService(path, ConcurrentUpdateFileIndexStorage(tokenizer, charset))
+        scope.launch { service.initialize(this) }
     }
 
     /**

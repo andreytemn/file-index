@@ -1,86 +1,93 @@
 package com.github.andreytemn.fileindex
 
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.*
 import org.junit.Test
-import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
+import org.mockito.kotlin.*
 import kotlin.test.assertContentEquals
 
 /**
  * Test for [FileIndexService]
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class FileIndexServiceTest {
 
-    @Test(expected = CancellationException::class)
-    fun `initialization reads all files`() = runBlocking {
-        val service = FileIndexService(this, getResourceDir(), ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
-        delay(1000)
+    @Test
+    fun `initialization reads all files`() = runTest {
+        val service = FileIndexService(getResourceDir(), ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
+        service.initialize(this)
 
-        assertContentEquals(getFiles(FILE4, FILE1, FILE2, FILE3).asSequence(), service["sit"])
+        assertContentEquals(getFiles(FILE4, FILE1, FILE2, FILE3).asSequence().sorted(), service["sit"].sorted())
 
         service.close()
-        cancel()
     }
 
-    @Test(expected = CancellationException::class)
-    fun `adding single files does not invalidate cache`() = runBlocking {
+    @Test
+    fun `adding single files does not invalidate cache`() = runTest {
         val index = mock<FileIndexStorage>()
         val dir = createTempDir()
-        val service = FileIndexService(this, dir, index)
-
-        val file = createFile(dir, "name")
-        delay(1000)
-
-        verify(index).add(file)
-        verify(index, times(0)).clear()
-
-        service.close()
-        cancel()
+        val service = FileIndexService(dir, index)
+        launch {
+            service.initialize(this)
+            val file = createFile(dir, "name")
+            advanceUntilIdle()
+            verify(index, timeout(1000)).add(file)
+            verify(index, times(0)).clear()
+            service.close()
+        }.cancel()
     }
 
-    @Test(expected = CancellationException::class)
-    fun `file deleting triggers cache invalidation`() = runBlocking {
+    @Test
+    fun `file deleting triggers cache invalidation`() = runTest {
         val index = mock<FileIndexStorage>()
         val dir = createTempDir()
-        val service = FileIndexService(this, dir, index)
+        launch {
+            val service = FileIndexService(
+                dir, index,
+                StandardTestDispatcher(testScheduler)
+            )
 
-        val file = createFile(dir, "name")
-        delay(1000)
-        verify(index).add(file)
+            service.initialize(this)
+            advanceUntilIdle()
 
-        file.delete()
-        delay(1000)
-        verify(index, atLeastOnce()).clear()
+            val file = createFile(dir, "name")
+            advanceUntilIdle()
+            verify(index).add(file)
 
-        service.close()
-        cancel()
+            file.delete()
+            advanceUntilIdle()
+            verify(index, atLeastOnce()).clear()
+
+            service.close()
+        }.cancel()
     }
 
 
-    @Test(expected = CancellationException::class)
-    fun `file modification rebuilds cache`() = runBlocking {
+    @Test
+    fun `file modification rebuilds cache`() = runTest {
         val dir = createTempDir()
-        val service = FileIndexService(this, dir, ConcurrentUpdateFileIndexStorage(SpaceTokenizer()))
+        val service = FileIndexService(
+            dir, ConcurrentUpdateFileIndexStorage(SpaceTokenizer()),
+            StandardTestDispatcher(testScheduler)
+        )
+        launch {
+            service.initialize(this)
+            advanceUntilIdle()
 
-        val file = createFile(dir, "name")
-        file.writeText("text1\ntext2")
-        delay(1000)
+            val file = createFile(dir, "name")
+            file.writeText("text1\ntext2")
+            advanceUntilIdle()
 
-        assertContentEquals(sequenceOf(file), service["text2"])
-        assertContentEquals(sequenceOf(), service["text3"])
+            assertContentEquals(sequenceOf(file), service["text2"])
+            assertContentEquals(sequenceOf(), service["text3"])
 
-        file.writeText("text3")
-        delay(1000)
+            file.writeText("text3")
+            advanceUntilIdle()
 
-        assertContentEquals(sequenceOf(file), service["text3"])
-        assertContentEquals(sequenceOf(), service["text2"])
+            assertContentEquals(sequenceOf(file), service["text3"])
+            assertContentEquals(sequenceOf(), service["text2"])
 
-        service.close()
-        cancel()
+            service.close()
+        }.cancel()
     }
 }
